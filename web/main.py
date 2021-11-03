@@ -1,3 +1,5 @@
+import sys
+import traceback
 import json
 import web
 
@@ -77,8 +79,10 @@ class DataObjectList:
         rows = []
         for idx in range(len(attribs)):
             attribute_name = attribs[idx]['name']
+
             # TODO: Need to map unsupported type to a generic one
-            attribute_type = attribs[idx]['properties']['type']
+            attribute_type = attribs[idx]['properties']['type']['genericType'] if 'genericType' in attribs[
+                idx]['properties']['type']['genericType'] else attribs[idx]['properties']['type']
             attribute_objs = attribs[idx]['properties']['objects'] if 'objects' in attribs[idx]['properties'].keys(
             ) else 'N/A'
 
@@ -86,6 +90,9 @@ class DataObjectList:
                    'type': attribute_type, 'objs': attribute_objs}
             for idx2 in range(len(objects)):
                 object = objects[idx2]
+
+                print('TYPE: {0}'.format(attribute_type))
+
                 err, val = sai.get_by_type(
                     object, attribute_name, attribute_type, False)
                 val = json.loads(val.data)[
@@ -106,21 +113,40 @@ class DataObjectList:
         rows = []
         for idx in range(len(attribs)):
             attribute_name = attribs[idx]['name']
-            attribute_type = attribs[idx]['properties']['genericType'] if 'genericTypes' in attribs[idx]['properties'].keys(
+
+            # TODO: Need to map unsupported type to a generic one
+            attribute_type = attribs[idx]['properties']['genericType'] if 'genericType' in attribs[idx]['properties'].keys(
             ) else attribs[idx]['properties']['type']
             attribute_objs = attribs[idx]['properties']['objects'] if 'objects' in attribs[idx]['properties'].keys(
             ) else 'N/A'
 
+            fetchError = False
             row = {'name': attribute_name,
-                   'type': attribute_type, 'objs': attribute_objs}
+                   'type': attribute_type,
+                   'objs': attribute_objs}
+                   
             for idx2 in range(len(objects)):
                 object = objects[idx2]
-                err, val = sai.get_by_type(
-                    object, attribute_name, attribute_type, False)
-                val = json.loads(val.data)[
-                    1] if err == 'SAI_STATUS_SUCCESS' else err
+
+                try:
+                    err, val = sai.get_by_type(
+                        object, attribute_name, attribute_type, False)
+                    val = json.loads(val.data)[
+                        1] if err == 'SAI_STATUS_SUCCESS' else err
+                except AssertionError:
+                    # TODO: uncomment to get more details on assert()
+                    # _, _, tb = sys.exc_info()
+                    # traceback.print_tb(tb) # Fixed format
+                    # val = 'SYS_UNREACHABLE'
+                    fetchError = True
+                    print("ATTRIBUTE\t'{0} with type {1} fetch failed".format(attribute_name, attribute_type), file=sys.stderr, flush=True)
+                    break
+
                 row[object] = val
-            rows.append(row)
+            if not fetchError:
+                rows.append(row)
+            else:
+                break
 
         return json.dumps(rows)
 
