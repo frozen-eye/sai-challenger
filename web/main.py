@@ -30,7 +30,7 @@ attributes = {}
 
 try:
     f = open('config.json')
-    attributes = sorted(json.load(f), key=lambda x: x['name'])
+    attributes = json.load(f) # sorted(json.load(f), key=lambda x: x['name'])
     f.close()
 except OSError:
     exit()
