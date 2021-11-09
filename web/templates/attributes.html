@@ -1,7 +1,18 @@
-$def with (title, attribute)
+$def with (title, attribute, attrs)
 <div class="row">
-  <p>$title</p>
+  <h4 class="primary" id="title">$title</h4>
 </div>
+
+<div class="row">
+  <nav aria-label="breadcrumb" style="margin-top: 16px;">
+      <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          $for attr in attrs:
+              <li class="breadcrumb-item"><a href="/attributes/$attr['name']/">$attr['name'].replace('SAI_OBJECT_TYPE_','')</a></li>
+      </ol>
+    </nav>
+</div>
+
 <div class="row">
   <div class="col-md-12 col-lg-12">
     <table class="table table-dark table-striped table-bordered" id="saiAttributesTable" style="width: 100%">

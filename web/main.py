@@ -40,9 +40,6 @@ except OSError:
 t_globals = {'attributes': attributes}
 render = web.template.render("templates", base="base", globals=t_globals)
 
-# Not supported types
-mapped_supported_types = ('acl_fields_data_t')
-
 
 class Dashboard:
     def GET(self):
@@ -58,7 +55,7 @@ class Object:
         oid = 'oid:' + oid
         objects = [oid]
         objects.insert(0, 'name')
-        return render.objects(title, name, fields=objects)
+        return render.objects(title, name, fields=objects, attrs=t_globals["attributes"])
 
 
 class ObjectList:
@@ -67,7 +64,7 @@ class ObjectList:
         short_name = name.replace('SAI_OBJECT_TYPE_', '')
         objects = sai.get_oids(SaiObjType[short_name])[short_name]
         objects.insert(0, 'name')
-        return render.objects(title, name, fields=objects)
+        return render.objects(title, name, fields=objects, attrs=t_globals["attributes"])
 
 
 class DataObjectList:
@@ -155,7 +152,7 @@ class Attributes:
     def GET(self, name):
         title = "SAI Attributes - {0}".format(name)
         attribute = [z for z in attributes if z['name'] == name][0]
-        return render.attributes(title, attribute)
+        return render.attributes(title, attribute, attrs=t_globals["attributes"])
 
 
 app = web.application(urls, globals())
