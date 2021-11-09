@@ -5,13 +5,14 @@ $def with (title, name, fields, attrs)
 
 <div class="row">
   <nav aria-label="breadcrumb" style="margin-top: 16px;">
-      <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="/">Home</a></li>
-          $for attr in attrs:
-              <li class="breadcrumb-item"><a href="/attributes/$attr['name']/">$attr['name'].replace('SAI_OBJECT_TYPE_','')</a></li>
-              
-      </ol>
-    </nav>
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="/">Home</a></li>
+      $for attr in attrs:
+      <li class="breadcrumb-item"><a href="/attributes/$attr['name']/">$attr['name'].replace('SAI_OBJECT_TYPE_','')</a>
+      </li>
+
+    </ol>
+  </nav>
 </div>
 
 <div class="row">
@@ -41,6 +42,14 @@ $def with (title, name, fields, attrs)
     let elements = [value];
 
     if (value != "SAI_STATUS_NOT_IMPLEMENTED") {
+
+      // FIXME: pretty display list
+      if (item.type == 'sai_s32_list_t' || item.type == 'sai_u32_list_t') {
+        let tmp = value.split(',');
+        tmp[0] = tmp[0].substring(tmp[0].indexOf(':') + 1);
+        elements = tmp;
+        return tmp.join(' | ');
+      }
 
       switch (item.type) {
         case 'sai_object_list_t':
